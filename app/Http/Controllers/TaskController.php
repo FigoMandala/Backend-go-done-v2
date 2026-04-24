@@ -225,35 +225,30 @@ class TaskController extends Controller
     public function stats()
     {
         $userId = Auth::id();
+        $today = now()->toDateString();
 
-        $total     = Task::where('user_id', $userId)->count();
-        $pending   = Task::where('user_id', $userId)->where('status', 'pending')->count();
-        $completed = Task::where('user_id', $userId)->whereIn('status', ['done', 'completed'])->count();
-
-        $highPending   = Task::where('user_id', $userId)->where('status', 'pending')->where('priority', 'high')->count();
-        $mediumPending = Task::where('user_id', $userId)->where('status', 'pending')->where('priority', 'medium')->count();
-        $lowPending    = Task::where('user_id', $userId)->where('status', 'pending')->where('priority', 'low')->count();
-
-        $overdue = Task::where('user_id', $userId)
-            ->where('status', 'pending')
-            ->whereNotNull('deadline')
-            ->where('deadline', '<', now()->toDateString())
-            ->count();
-
-        $todayDue = Task::where('user_id', $userId)
-            ->where('status', 'pending')
-            ->where('deadline', now()->toDateString())
-            ->count();
+        $stats = Task::where('user_id', $userId)
+            ->selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN status = \'pending\' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status IN (\'done\', \'completed\') THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN status = \'pending\' AND priority = \'high\' THEN 1 ELSE 0 END) as high_pending,
+                SUM(CASE WHEN status = \'pending\' AND priority = \'medium\' THEN 1 ELSE 0 END) as medium_pending,
+                SUM(CASE WHEN status = \'pending\' AND priority = \'low\' THEN 1 ELSE 0 END) as low_pending,
+                SUM(CASE WHEN status = \'pending\' AND deadline IS NOT NULL AND deadline < ? THEN 1 ELSE 0 END) as overdue,
+                SUM(CASE WHEN status = \'pending\' AND deadline = ? THEN 1 ELSE 0 END) as today_due
+            ', [$today, $today])
+            ->first();
 
         return response()->json([
-            'total'          => $total,
-            'pending'        => $pending,
-            'completed'      => $completed,
-            'overdue'        => $overdue,
-            'today_due'      => $todayDue,
-            'high_pending'   => $highPending,
-            'medium_pending' => $mediumPending,
-            'low_pending'    => $lowPending,
+            'total'          => (int) ($stats->total ?? 0),
+            'pending'        => (int) ($stats->pending ?? 0),
+            'completed'      => (int) ($stats->completed ?? 0),
+            'overdue'        => (int) ($stats->overdue ?? 0),
+            'today_due'      => (int) ($stats->today_due ?? 0),
+            'high_pending'   => (int) ($stats->high_pending ?? 0),
+            'medium_pending' => (int) ($stats->medium_pending ?? 0),
+            'low_pending'    => (int) ($stats->low_pending ?? 0),
         ]);
     }
 }
