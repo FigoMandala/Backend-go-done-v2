@@ -2,6 +2,21 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
+
+// ⚠️ TEMP: Test SMTP — hit GET /api/test-email?to=yourmail@gmail.com
+Route::get('/test-email', function (Request $request) {
+    $to = $request->query('to', 'test@example.com');
+    try {
+        Mail::raw('Hello from GoDone! SMTP is working ✅', function ($msg) use ($to) {
+            $msg->to($to)->subject('GoDone SMTP Test');
+        });
+        return response()->json(['success' => true, 'message' => 'Email sent to ' . $to]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+});
+
 
 Route::post('/auth/register', [\App\Http\Controllers\AuthController::class, 'register'])
     ->middleware('throttle:auth-register');
