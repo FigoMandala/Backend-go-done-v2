@@ -4,7 +4,7 @@
     <title>Password Reset</title>
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #f4f4f5; padding: 20px; color: #333;">
-    <div style="max-w-md: 500px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+    <div style="max-width: 500px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
         <h2 style="color: #21569A; margin-top: 0;">Password Reset Request</h2>
         <p>Hello {{ $firstName }},</p>
         <p>You recently requested to reset your password for your GoDone account. Use the OTP code below to proceed.</p>
