@@ -8,10 +8,9 @@ Route::post('/auth/register', [\App\Http\Controllers\AuthController::class, 'reg
 Route::post('/auth/login', [\App\Http\Controllers\AuthController::class, 'login'])
     ->middleware('throttle:auth-login');
 
-// Password Reset Routes
-Route::post('/auth/password-forgot', [\App\Http\Controllers\PasswordResetController::class, 'sendOtp'])
+// Password Reset Routes (Magic Link)
+Route::post('/auth/password-forgot', [\App\Http\Controllers\PasswordResetController::class, 'sendResetLink'])
     ->middleware('throttle:3,1'); // max 3 attempts per minute
-Route::post('/auth/password-reset-verify', [\App\Http\Controllers\PasswordResetController::class, 'verifyOtp']);
 Route::post('/auth/password-reset', [\App\Http\Controllers\PasswordResetController::class, 'resetPassword']);
 
 Route::middleware(['auth:sanctum', 'throttle:api-authenticated'])->group(function () {

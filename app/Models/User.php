@@ -12,6 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
 use Laravel\Sanctum\HasApiTokens;
+use App\Notifications\ResetPasswordNotification;
 
 #[Fillable(['first_name', 'last_name', 'username', 'email', 'password', 'photo_url'])]
 #[Hidden(['password', 'remember_token'])]
@@ -53,5 +54,13 @@ class User extends Authenticatable
         }
 
         return url($value);
+    }
+
+    /**
+     * Send our custom magic-link reset notification.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }
