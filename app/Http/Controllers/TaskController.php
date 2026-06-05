@@ -96,23 +96,28 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
+        $mappedPriority = $this->normalizePriority($request->input('priority', 'medium'));
+        $request->merge(['priority' => $mappedPriority]);
+
         $request->validate([
-            'category_id' => 'required|exists:categories,category_id',
+            'category_id' => 'nullable|exists:categories,category_id',
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
             'deadline'    => 'nullable|date',
-            'priority'    => 'nullable|string|in:low,medium,high,Low,Medium,High',
+            'priority'    => 'nullable|string|in:low,medium,high',
             'status'      => 'nullable|string|in:pending,done,completed',
         ]);
 
-        $categoryBelongsToUser = Category::where('category_id', $request->category_id)
-            ->where('user_id', Auth::id())
-            ->exists();
+        if ($request->filled('category_id')) {
+            $categoryBelongsToUser = Category::where('category_id', $request->category_id)
+                ->where('user_id', Auth::id())
+                ->exists();
 
-        if (!$categoryBelongsToUser) {
-            return response()->json([
-                'message' => 'Kategori tidak valid untuk akun ini.',
-            ], 422);
+            if (!$categoryBelongsToUser) {
+                return response()->json([
+                    'message' => 'Kategori tidak valid untuk akun ini.',
+                ], 422);
+            }
         }
 
         $normalizedStatus = strtolower($request->status ?? 'pending');
@@ -120,13 +125,23 @@ class TaskController extends Controller
             $normalizedStatus = 'done';
         }
 
+        $description = $request->description;
+        if (empty($description) && $request->filled('time')) {
+            $description = 'Waktu: '.$request->time;
+        }
+
+        $deadline = $request->deadline;
+        if (empty($deadline) && $request->filled('date')) {
+            $deadline = $request->date;
+        }
+
         $task = Task::create([
             'user_id'     => Auth::id(),
             'category_id' => $request->category_id,
             'title'       => $request->title,
-            'description' => $request->description,
-            'deadline'    => $request->deadline,
-            'priority'    => strtolower($request->priority ?? 'medium'),
+            'description' => $description,
+            'deadline'    => $deadline,
+            'priority'    => $mappedPriority,
             'status'      => $normalizedStatus,
         ]);
 
@@ -153,12 +168,24 @@ class TaskController extends Controller
     {
         $task = Task::where('user_id', Auth::id())->findOrFail($id);
 
+        if ($request->has('done')) {
+            $request->merge([
+                'status' => $request->boolean('done') ? 'done' : 'pending',
+            ]);
+        }
+
+        if ($request->has('priority')) {
+            $request->merge([
+                'priority' => $this->normalizePriority($request->input('priority')),
+            ]);
+        }
+
         $request->validate([
-            'category_id' => 'sometimes|exists:categories,category_id',
+            'category_id' => 'sometimes|nullable|exists:categories,category_id',
             'title'       => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'deadline'    => 'nullable|date',
-            'priority'    => 'sometimes|string|in:low,medium,high,Low,Medium,High',
+            'priority'    => 'sometimes|string|in:low,medium,high',
             'status'      => 'sometimes|string|in:pending,done,completed',
         ]);
 
@@ -174,11 +201,6 @@ class TaskController extends Controller
                     'message' => 'Kategori tidak valid untuk akun ini.',
                 ], 422);
             }
-        }
-
-        // Normalize priority to lowercase before saving
-        if (isset($data['priority'])) {
-            $data['priority'] = strtolower($data['priority']);
         }
 
         // Normalize status to lowercase before saving
@@ -250,5 +272,17 @@ class TaskController extends Controller
             'medium_pending' => (int) ($stats->medium_pending ?? 0),
             'low_pending'    => (int) ($stats->low_pending ?? 0),
         ]);
+    }
+
+    private function normalizePriority(?string $priority): string
+    {
+        $priority = strtolower((string) ($priority ?: 'medium'));
+
+        return match ($priority) {
+            'tinggi' => 'high',
+            'sedang' => 'medium',
+            'rendah' => 'low',
+            default => $priority,
+        };
     }
 }

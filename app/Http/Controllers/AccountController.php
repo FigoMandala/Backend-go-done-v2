@@ -21,7 +21,14 @@ class AccountController extends Controller
 
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
+            'username' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('users', 'username')->ignore($user->id),
+            ],
             'email' => [
                 'required',
                 'string',
@@ -69,7 +76,10 @@ class AccountController extends Controller
         }
 
         $user->first_name = $validated['first_name'];
-        $user->last_name = $validated['last_name'];
+        $user->last_name = $validated['last_name'] ?? null;
+        if (array_key_exists('username', $validated)) {
+            $user->username = $validated['username'];
+        }
         $user->email = $validated['email'];
 
         if ($hasPasswordChange && filled($request->input('newPassword'))) {
@@ -127,7 +137,7 @@ class AccountController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Foto profil berhasil diperbarui!',
-            'photo_url' => $photoUrl,
+            'photo_url' => $user->photo_url,
             'user' => $user,
         ]);
     }
