@@ -26,7 +26,17 @@ class AuthController extends Controller
                 'last_name' => 'nullable|string|max:255',
                 'username' => 'required|string|max:255|unique:users',
                 'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:6',
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'regex:/[A-Za-z]/',
+                    'regex:/[0-9]/',
+                    'regex:/[^A-Za-z0-9]/',
+                ],
+            ], [
+                'password.min' => 'Password minimal 8 karakter.',
+                'password.regex' => 'Password harus berisi kombinasi huruf, angka, dan simbol.',
             ]);
 
             $user = User::create([

@@ -37,8 +37,18 @@ class AccountController extends Controller
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
             'currentPassword' => ['nullable', 'string'],
-            'newPassword' => ['nullable', 'string', 'min:6'],
+            'newPassword' => [
+                'nullable',
+                'string',
+                'min:8',
+                'regex:/[A-Za-z]/',
+                'regex:/[0-9]/',
+                'regex:/[^A-Za-z0-9]/',
+            ],
             'confirmPassword' => ['nullable', 'string'],
+        ], [
+            'newPassword.min' => 'Password baru minimal 8 karakter.',
+            'newPassword.regex' => 'Password baru harus berisi kombinasi huruf, angka, dan simbol.',
         ]);
 
         $hasPasswordChange = filled($request->input('currentPassword'))
