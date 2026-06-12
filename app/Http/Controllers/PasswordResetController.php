@@ -11,9 +11,6 @@ use Illuminate\Support\Str;
 
 class PasswordResetController extends Controller
 {
-    /**
-     * Step 1: Send Magic Link to email
-     */
     public function sendResetLink(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -42,9 +39,6 @@ class PasswordResetController extends Controller
         ], 500);
     }
 
-    /**
-     * Step 2: Reset password using token from magic link
-     */
     public function resetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [

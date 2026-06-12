@@ -11,9 +11,6 @@ class ResetPasswordNotification extends BaseResetPassword
 {
     use Queueable;
 
-    /**
-     * Build the mail representation of the notification.
-     */
     public function toMail($notifiable): MailMessage
     {
         $frontendUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173')), '/');

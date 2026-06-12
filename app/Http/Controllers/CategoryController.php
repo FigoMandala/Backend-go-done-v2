@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
-    /**
-     * List all categories for the authenticated user.
-     */
     public function index()
     {
         $categories = Category::where('user_id', Auth::id())
@@ -21,9 +18,6 @@ class CategoryController extends Controller
         return response()->json($categories);
     }
 
-    /**
-     * Show a single category.
-     */
     public function show($id)
     {
         $category = Category::where('user_id', Auth::id())->findOrFail($id);
@@ -31,9 +25,6 @@ class CategoryController extends Controller
         return response()->json($category);
     }
 
-    /**
-     * Create a new category.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -59,9 +50,6 @@ class CategoryController extends Controller
         return response()->json($category, 201);
     }
 
-    /**
-     * Update an existing category.
-     */
     public function update(Request $request, $id)
     {
         $category = Category::where('user_id', Auth::id())->findOrFail($id);
@@ -89,10 +77,6 @@ class CategoryController extends Controller
         return response()->json($category);
     }
 
-    /**
-     * Delete a category.
-     * Returns 400 if the category is used by any tasks.
-     */
     public function destroy($id)
     {
         $category = Category::where('user_id', Auth::id())->findOrFail($id);

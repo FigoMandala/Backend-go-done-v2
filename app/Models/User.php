@@ -18,7 +18,6 @@ use App\Notifications\ResetPasswordNotification;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
@@ -30,11 +29,6 @@ class User extends Authenticatable
         'photo_url',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -56,9 +50,6 @@ class User extends Authenticatable
         return url($value);
     }
 
-    /**
-     * Send our custom magic-link reset notification.
-     */
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));

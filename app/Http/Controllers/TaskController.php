@@ -9,10 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
-    /**
-     * List all tasks for the authenticated user.
-     * Supports optional query params: ?search=, ?priority=, ?status=, ?category_id=
-     */
     public function index(Request $request)
     {
         $query = Task::with('category')->where('user_id', Auth::id());
@@ -70,9 +66,6 @@ class TaskController extends Controller
         return response()->json($tasks);
     }
 
-    /**
-     * Show a single task.
-     */
     public function show($id)
     {
         $task = Task::with('category')->where('user_id', Auth::id())->findOrFail($id);
@@ -91,9 +84,6 @@ class TaskController extends Controller
         ]);
     }
 
-    /**
-     * Create a new task.
-     */
     public function store(Request $request)
     {
         $mappedPriority = $this->normalizePriority($request->input('priority', 'medium'));
@@ -161,9 +151,6 @@ class TaskController extends Controller
         ], 201);
     }
 
-    /**
-     * Update an existing task.
-     */
     public function update(Request $request, $id)
     {
         $task = Task::where('user_id', Auth::id())->findOrFail($id);
@@ -229,9 +216,6 @@ class TaskController extends Controller
         ]);
     }
 
-    /**
-     * Delete a task.
-     */
     public function destroy($id)
     {
         $task = Task::where('user_id', Auth::id())->findOrFail($id);
@@ -240,10 +224,6 @@ class TaskController extends Controller
         return response()->json(['message' => 'Task deleted successfully']);
     }
 
-    /**
-     * Get task statistics for the authenticated user.
-     * Returns counts by status and priority.
-     */
     public function stats()
     {
         $userId = Auth::id();
